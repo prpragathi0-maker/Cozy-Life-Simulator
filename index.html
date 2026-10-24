@@ -1,0 +1,528 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f6f3ec">
+<title>Cozy Life Simulator</title>
+<style>
+:root {
+  --bg:#f6f3ec; --paper:#fffdf8; --ink:#373b32;
+  --muted:#85877c; --sage:#78866b; --line:#e6e1d6;
+  --gold:#c6a66a; --shadow:0 12px 32px #49422b0d;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font-family:Inter,"Segoe UI",sans-serif}
+button{font:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid var(--sage);outline-offset:3px}
+.app{max-width:1440px;margin:auto;padding:26px 34px 38px}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;
+padding-bottom:22px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:43px;height:43px;border-radius:15px;background:#e6e9dd;
+display:grid;place-items:center;font-size:23px}
+.brand h1{font-size:19px;letter-spacing:-.7px;margin:0}
+.brand p{font-size:11px;letter-spacing:2px;color:var(--muted);margin:5px 0 0}
+.header-right{display:flex;align-items:center;gap:9px}
+.pill{border:1px solid var(--line);background:var(--paper);border-radius:30px;
+padding:10px 14px;font-size:12px}
+#coins{color:#937442}
+.intro{display:flex;justify-content:space-between;align-items:end;gap:15px;
+margin:28px 0 20px}
+.eyebrow{font-size:10px;letter-spacing:2.5px;color:var(--sage);font-weight:700}
+h2{font-size:clamp(25px,4vw,37px);letter-spacing:-1.5px;margin:9px 0}
+.intro p{font-size:13px;color:var(--muted);line-height:1.7;margin:0}
+.round-btn{border:1px solid var(--line);background:var(--paper);border-radius:50%;
+width:42px;height:42px;font-size:17px}
+.layout{display:grid;grid-template-columns:245px minmax(0,1fr);gap:23px}
+.sidebar,.game-card{background:var(--paper);border:1px solid var(--line);
+border-radius:22px;box-shadow:var(--shadow)}
+.sidebar{padding:20px;height:fit-content}
+.side-title{font-size:10px;letter-spacing:2px;color:var(--muted);margin:0 0 14px}
+.room-list{display:grid;gap:8px}
+.room-btn{display:flex;align-items:center;gap:12px;text-align:left;
+padding:12px;border:1px solid transparent;background:transparent;border-radius:14px;
+color:var(--ink);width:100%}
+.room-btn.active{background:#edf0e7;border-color:#e0e5d7}
+.room-btn:disabled{opacity:.45;cursor:not-allowed}
+.room-icon{width:39px;height:39px;display:grid;place-items:center;
+background:#f2efe7;border-radius:12px;font-size:21px;flex-shrink:0}
+.room-btn.active .room-icon{background:#dfe6d6}
+.room-name{font-size:13px;font-weight:600}
+.room-status{font-size:10px;color:var(--muted);margin-top:5px}
+.progress-box{margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}
+.progress-row{display:flex;justify-content:space-between;font-size:11px;margin-bottom:10px}
+.track{height:6px;background:#ece9e1;border-radius:10px;overflow:hidden}
+.fill{height:100%;width:0;background:var(--sage);transition:width .3s}
+.tip{background:#f6f3ec;padding:14px;border-radius:14px;font-size:11px;
+line-height:1.7;color:#74766c;margin-top:20px}
+.game-card{padding:20px;min-width:0}
+.game-top{display:flex;align-items:center;justify-content:space-between;gap:10px;
+margin-bottom:15px}
+.game-top h3{font-size:16px;margin:0}
+.game-top p{font-size:11px;color:var(--muted);margin:5px 0 0}
+.counter{font-size:11px;color:var(--sage);background:#edf0e7;padding:9px 12px;
+border-radius:30px;white-space:nowrap}
+.room-scene{height:clamp(320px,47vw,490px);position:relative;overflow:hidden;
+border-radius:16px;background:#e8e1d2;isolation:isolate;touch-action:pan-y}
+.wall{position:absolute;inset:0 0 27%;background:#e9e2d5;
+background-image:linear-gradient(90deg,#ffffff0c 1px,transparent 1px);
+background-size:38px 38px}
+.floor{position:absolute;bottom:0;height:28%;width:100%;background:#cdbb9e;
+border-top:6px solid #b8a487}
+.floor:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(
+0deg,transparent 0 36px,#a58d6e22 37px 39px)}
+.window{position:absolute;top:7%;left:8%;width:24%;height:30%;
+background:#d5e4e3;border:9px solid #fffaf0;border-radius:3px;
+box-shadow:0 0 0 1px #d6cbbb;overflow:hidden}
+.window:before{content:"";position:absolute;left:49%;top:0;height:100%;
+width:5px;background:#fffaf0}
+.window:after{content:"";position:absolute;top:49%;left:0;width:100%;
+height:5px;background:#fffaf0}
+.sunlight{position:absolute;inset:0;background:linear-gradient(120deg,#fff7cf55,transparent 60%)}
+.rug{position:absolute;bottom:4%;left:25%;width:50%;height:23%;
+border-radius:50%;background:#e6d9c2;border:2px solid #d5c6ac}
+.zone{position:absolute;z-index:2;border:1.5px dashed #8c9b7b99;
+background:#f9f8f0a8;border-radius:13px;display:flex;align-items:center;
+justify-content:center;flex-direction:column;gap:3px;text-align:center;
+color:#66725b;font-size:10px;pointer-events:none;padding:4px}
+.zone b{font-size:23px;font-weight:400}
+.zone span{font-weight:600}
+.zone .zone-hint{font-size:9px;color:#85877c;font-weight:400}
+.zone.done{background:#e3eadbba;border:1.5px solid #7e926b}
+.zone.wrong{animation:shake .25s}
+.item{position:absolute;z-index:5;width:66px;height:69px;border:1px solid #ffffffb8;
+background:#fffdf0eF;border-radius:15px;box-shadow:0 5px 14px #4c42231c;
+display:flex;flex-direction:column;align-items:center;justify-content:center;
+gap:3px;touch-action:none;user-select:none;-webkit-user-select:none;
+cursor:grab;transition:box-shadow .15s,transform .15s}
+.item .emoji{font-size:28px;line-height:1.1;pointer-events:none}
+.item .item-label{font-size:9px;color:#65685b;pointer-events:none}
+.item:active{cursor:grabbing}
+.item.dragging{z-index:20;transform:scale(1.08);box-shadow:0 15px 28px #39372a36}
+.item.placed{border-color:#a6b69a;background:#f2f5ec}
+.item.placed:after{content:"✓";position:absolute;top:-6px;right:-5px;
+background:var(--sage);color:white;width:17px;height:17px;border-radius:50%;
+font-size:10px;display:grid;place-items:center}
+.scene-message{position:absolute;z-index:10;left:50%;top:50%;transform:translate(-50%,-50%);
+width:min(85%,330px);background:#fffdf4f5;border:1px solid #fff;
+border-radius:20px;padding:23px;text-align:center;box-shadow:0 12px 35px #4b43251a}
+.scene-message .big{font-size:35px}
+.scene-message h4{font-size:19px;margin:10px 0 7px}
+.scene-message p{font-size:12px;line-height:1.6;color:var(--muted)}
+.primary{background:var(--sage);color:white;border:0;border-radius:12px;
+padding:12px 17px;font-size:12px;font-weight:600}
+.scene-message .primary{margin-top:5px}
+.scene-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;
+margin-top:16px}
+.scene-bottom p{font-size:11px;color:var(--muted);line-height:1.6;margin:0}
+.action-row{display:flex;gap:8px}
+.secondary{border:1px solid var(--line);background:var(--paper);
+border-radius:11px;padding:11px 13px;font-size:11px;color:var(--ink)}
+.bottom-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px}
+.stat{border:1px solid var(--line);border-radius:16px;padding:15px}
+.stat span{font-size:10px;color:var(--muted)}
+.stat strong{display:block;font-size:22px;margin-top:7px;font-weight:600}
+footer{text-align:center;padding:28px 0 0;color:var(--muted);font-size:10px;
+letter-spacing:1px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+background:#373b32;color:white;padding:12px 18px;border-radius:30px;
+font-size:12px;z-index:50;box-shadow:var(--shadow);max-width:90%;text-align:center}
+.hidden{display:none!important}
+@keyframes shake{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+@media(min-width:1100px){.room-scene{height:490px}}
+@media(max-width:700px){
+ .app{padding:16px 13px 28px}
+ header{padding-bottom:16px}
+ .brand h1{font-size:16px}
+ .brand p{font-size:9px;letter-spacing:1.3px}
+ .logo{width:38px;height:38px}
+ .header-right{gap:5px}
+ .pill{padding:9px 10px;font-size:11px}
+ .intro{margin:23px 0 17px;align-items:start}
+ .intro p{max-width:260px}
+ .layout{grid-template-columns:1fr;gap:14px}
+ .sidebar{padding:14px}
+ .side-title{margin-bottom:10px}
+ .room-list{display:flex;overflow-x:auto;padding-bottom:3px;gap:7px}
+ .room-btn{width:145px;flex-shrink:0;padding:9px;gap:8px}
+ .room-icon{width:34px;height:34px;font-size:18px}
+ .room-name{font-size:11px}
+ .room-status{font-size:9px}
+ .progress-box{margin-top:12px;padding-top:13px}
+ .tip{margin-top:12px;padding:10px}
+ .game-card{padding:12px}
+ .room-scene{height:390px}
+ .item{width:57px;height:61px;border-radius:12px}
+ .item .emoji{font-size:24px}
+ .item .item-label{font-size:8px}
+ .zone{font-size:9px}
+ .zone b{font-size:20px}
+ .zone .zone-hint{font-size:8px}
+ .scene-bottom{align-items:start;flex-direction:column}
+ .bottom-stats{gap:7px;margin-top:13px}
+ .stat{padding:11px}
+ .stat strong{font-size:19px}
+}
+@media(max-width:380px){
+ .room-scene{height:350px}
+ .item{width:51px;height:56px}
+ .item .emoji{font-size:22px}
+ .window{border-width:6px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand">
+    <div class="logo">⌂</div>
+    <div><h1>Cozy Life</h1><p>YOUR LITTLE WORLD</p></div>
+  </div>
+  <div class="header-right">
+    <div class="pill" id="coins">✧ 0 coins</div>
+    <button class="round-btn" id="soundBtn" aria-label="Toggle sound">♫</button>
+  </div>
+</header>
+
+<section class="intro">
+ <div>
+  <div class="eyebrow">SLOW DOWN · SETTLE IN</div>
+  <h2>A little space, just for you.</h2>
+  <p>Put everything in its place. Take a breath. Enjoy the little things.</p>
+ </div>
+ <button class="round-btn" id="resetBtn" aria-label="Reset current room" title="Reset room">↻</button>
+</section>
+
+<div class="layout">
+ <aside class="sidebar">
+  <p class="side-title">YOUR HOME</p>
+  <div class="room-list" id="roomList"></div>
+  <div class="progress-box">
+   <div class="progress-row"><span>Home progress</span><b id="progressText">0%</b></div>
+   <div class="track"><div class="fill" id="progressFill"></div></div>
+  </div>
+  <div class="tip">☼ <b>A gentle reminder</b><br>
+   There's no rush here. Drag each little thing to the place where it belongs.</div>
+ </aside>
+
+ <main class="game-card">
+  <div class="game-top">
+   <div><h3 id="roomTitle">The Living Room</h3><p id="roomSubtitle">Make yourself at home.</p></div>
+   <div class="counter" id="itemCount">0 / 0 placed</div>
+  </div>
+  <div class="room-scene" id="scene" aria-label="Interactive room organizing game">
+   <div class="wall"></div><div class="sunlight"></div>
+   <div class="window"></div><div class="floor"></div><div class="rug"></div>
+   <div id="zones"></div><div id="items"></div>
+   <div id="message" class="scene-message hidden"></div>
+  </div>
+  <div class="scene-bottom">
+   <p id="instruction">Drag an object into its matching area.</p>
+   <div class="action-row">
+    <button class="secondary" id="shuffleBtn">↻ Shuffle</button>
+    <button class="secondary" id="hintBtn">✧ Hint</button>
+   </div>
+  </div>
+ </main>
+</div>
+
+<div class="bottom-stats">
+ <div class="stat"><span>ROOMS COMPLETE</span><strong id="roomsStat">0 / 4</strong></div>
+ <div class="stat"><span>OBJECTS PLACED</span><strong id="placedStat">0</strong></div>
+ <div class="stat"><span>YOUR LEVEL</span><strong id="levelStat">1</strong></div>
+</div>
+<footer>MADE FOR SLOW DAYS & SOFT MOMENTS · COZY LIFE</footer>
+</div>
+
+<div class="toast hidden" id="toast" role="status"></div>
+
+<script>
+const rooms = [
+ {
+  name:"Living Room",icon:"🛋️",subtitle:"Make yourself at home.",
+  zones:[
+   {id:"sofa",name:"Sofa",emoji:"🛋️",x:35,y:58,w:29,h:25},
+   {id:"shelf",name:"Bookshelf",emoji:"📚",x:72,y:22,w:20,h:28},
+   {id:"plant",name:"Plant corner",emoji:"🪴",x:8,y:48,w:18,h:26},
+   {id:"table",name:"Coffee table",emoji:"🪵",x:39,y:27,w:23,h:23}
+  ],
+  items:[
+   {name:"Cushion",emoji:"🛏️",zone:"sofa",x:20,y:69},
+   {name:"Throw",emoji:"🧣",zone:"sofa",x:65,y:70},
+   {name:"Novel",emoji:"📖",zone:"shelf",x:49,y:44},
+   {name:"Plant",emoji:"🪴",zone:"plant",x:78,y:64},
+   {name:"Tea",emoji:"🍵",zone:"table",x:27,y:38},
+   {name:"Candle",emoji:"🕯️",zone:"table",x:83,y:43}
+  ]
+ },
+ {
+  name:"Bedroom",icon:"🛏️",subtitle:"A softer place to rest.",
+  zones:[
+   {id:"bed",name:"Bed",emoji:"🛏️",x:34,y:47,w:35,h:33},
+   {id:"dresser",name:"Dresser",emoji:"🗄️",x:70,y:22,w:20,h:27},
+   {id:"nightstand",name:"Nightstand",emoji:"🪑",x:10,y:57,w:20,h:24},
+   {id:"window",name:"Window",emoji:"🪟",x:8,y:13,w:23,h:28}
+  ],
+  items:[
+   {name:"Pillow",emoji:"🛌",zone:"bed",x:15,y:37},
+   {name:"Blanket",emoji:"🧣",zone:"bed",x:73,y:68},
+   {name:"Book",emoji:"📕",zone:"nightstand",x:43,y:30},
+   {name:"Lamp",emoji:"💡",zone:"nightstand",x:80,y:47},
+   {name:"Clothes",emoji:"👕",zone:"dresser",x:50,y:71},
+   {name:"Curtain",emoji:"🪟",zone:"window",x:31,y:61}
+  ]
+ },
+ {
+  name:"Kitchen",icon:"🍵",subtitle:"A happy little kitchen.",
+  zones:[
+   {id:"counter",name:"Counter",emoji:"🧑‍🍳",x:29,y:36,w:38,h:23},
+   {id:"fridge",name:"Fridge",emoji:"🧊",x:73,y:19,w:19,h:39},
+   {id:"shelf",name:"Open shelf",emoji:"🪵",x:7,y:17,w:23,h:25},
+   {id:"table",name:"Dining table",emoji:"🍽️",x:37,y:65,w:28,h:20}
+  ],
+  items:[
+   {name:"Mug",emoji:"☕",zone:"counter",x:15,y:58},
+   {name:"Bread",emoji:"🍞",zone:"counter",x:68,y:64},
+   {name:"Milk",emoji:"🥛",zone:"fridge",x:48,y:32},
+   {name:"Apple",emoji:"🍎",zone:"table",x:75,y:72},
+   {name:"Plate",emoji:"🍽️",zone:"table",x:18,y:76},
+   {name:"Spices",emoji:"🧂",zone:"shelf",x:56,y:51}
+  ]
+ },
+ {
+  name:"Study Room",icon:"📚",subtitle:"Find your focus, one thing at a time.",
+  zones:[
+   {id:"desk",name:"Study desk",emoji:"🪑",x:34,y:54,w:34,h:26},
+   {id:"bookcase",name:"Bookcase",emoji:"📚",x:70,y:17,w:22,h:35},
+   {id:"pinboard",name:"Pinboard",emoji:"📌",x:35,y:14,w:27,h:24},
+   {id:"plant",name:"Plant corner",emoji:"🪴",x:7,y:57,w:20,h:24}
+  ],
+  items:[
+   {name:"Laptop",emoji:"💻",zone:"desk",x:13,y:37},
+   {name:"Notebook",emoji:"📓",zone:"desk",x:70,y:68},
+   {name:"Textbooks",emoji:"📚",zone:"bookcase",x:44,y:51},
+   {name:"Sticky note",emoji:"📝",zone:"pinboard",x:69,y:42},
+   {name:"Headphones",emoji:"🎧",zone:"desk",x:78,y:73},
+   {name:"Plant",emoji:"🪴",zone:"plant",x:23,y:19}
+  ]
+ }
+];
+
+const $ = id => document.getElementById(id);
+const SAVE_KEY = "cozyLifeSimulator_v1";
+let saved = {};
+try { saved = JSON.parse(localStorage.getItem(SAVE_KEY)) || {}; } catch(e) {}
+let currentRoom = Math.min(saved.currentRoom || 0, rooms.length-1);
+let coins = saved.coins || 0;
+let soundOn = saved.soundOn !== false;
+let roomStates = rooms.map((room,i) => {
+ const s = saved.roomStates && saved.roomStates[i];
+ return { completed:!!(s && s.completed),
+  placed:s && Array.isArray(s.placed) ? s.placed : [] };
+});
+let activeDrag = null;
+let toastTimer;
+let audioCtx;
+
+function persist(){
+ try {
+  localStorage.setItem(SAVE_KEY,JSON.stringify({
+   currentRoom,coins,soundOn,
+   roomStates:roomStates.map(s=>({completed:s.completed,placed:s.placed}))
+  }));
+ } catch(e) {}
+}
+function beep(freq=580,duration=.09){
+ if(!soundOn) return;
+ try {
+  audioCtx ||= new (window.AudioContext || window.webkitAudioContext)();
+  if(audioCtx.state==="suspended") audioCtx.resume();
+  const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
+  osc.type="sine";osc.frequency.value=freq;
+  gain.gain.setValueAtTime(.045,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+duration);
+  osc.connect(gain);gain.connect(audioCtx.destination);
+  osc.start();osc.stop(audioCtx.currentTime+duration);
+ } catch(e) {}
+}
+function toast(text){
+ $("toast").textContent=text;
+ $("toast").classList.remove("hidden");
+ clearTimeout(toastTimer);
+ toastTimer=setTimeout(()=>$("toast").classList.add("hidden"),2100);
+}
+function roomUnlocked(i){return i===0 || roomStates[i-1].completed}
+function renderRooms(){
+ $("roomList").innerHTML="";
+ rooms.forEach((r,i)=>{
+  const b=document.createElement("button");
+  b.className="room-btn"+(i===currentRoom?" active":"");
+  b.disabled=!roomUnlocked(i);
+  const status=roomStates[i].completed?"✓ Complete":!roomUnlocked(i)?"🔒 Locked":"Ready to play";
+  b.innerHTML=`<span class="room-icon">${r.icon}</span><span>
+   <div class="room-name">${r.name}</div><div class="room-status">${status}</div></span>`;
+  b.addEventListener("click",()=>{if(roomUnlocked(i)){currentRoom=i;persist();render()}});
+  $("roomList").appendChild(b);
+ });
+}
+function setStyle(el,obj){
+ Object.assign(el.style,{
+  left:obj.x+"%",top:obj.y+"%",
+  ...(obj.w?{width:obj.w+"%",height:obj.h+"%"}:{})
+ });
+}
+function render(){
+ const room=rooms[currentRoom],state=roomStates[currentRoom];
+ $("roomTitle").textContent=room.name;
+ $("roomSubtitle").textContent=room.subtitle;
+ $("coins").textContent="✧ "+coins+" coins";
+ $("soundBtn").textContent=soundOn?"♫":"♪̸";
+ $("soundBtn").title=soundOn?"Sound on":"Sound off";
+ $("zones").innerHTML="";
+ $("items").innerHTML="";
+ $("message").classList.add("hidden");
+ room.zones.forEach(z=>{
+  const el=document.createElement("div");
+  el.className="zone"+(room.items.filter(it=>it.zone===z.id&&state.placed.includes(it.name)).length===room.items.filter(it=>it.zone===z.id).length?" done":"");
+  setStyle(el,z);
+  el.innerHTML=`<b>${z.emoji}</b><span>${z.name}</span><span class="zone-hint">place here</span>`;
+  el.dataset.zone=z.id;
+  $("zones").appendChild(el);
+ });
+ room.items.forEach((it,i)=>{
+  const el=document.createElement("button");
+  const placed=state.placed.includes(it.name);
+  el.className="item"+(placed?" placed":"");
+  el.setAttribute("aria-label",it.name+(placed?", placed":", drag to "+room.zones.find(z=>z.id===it.zone).name));
+  el.innerHTML=`<span class="emoji">${it.emoji}</span><span class="item-label">${it.name}</span>`;
+  let pos=placed?room.zones.find(z=>z.id===it.zone):it;
+  if(placed){
+   const same=room.items.filter(x=>x.zone===it.zone);
+   const index=same.findIndex(x=>x.name===it.name);
+   pos={x:pos.x+Math.max(0,index)*3,y:pos.y+Math.max(0,index)*2};
+  }
+  setStyle(el,pos);
+  if(!placed) enableDrag(el,it,i);
+  else el.style.cursor="default";
+  $("items").appendChild(el);
+ });
+ const count=state.placed.length;
+ $("itemCount").textContent=`${count} / ${room.items.length} placed`;
+ $("instruction").textContent=count===room.items.length?"Beautifully done. Your space is ready.":"Drag each object to its matching area. No rush.";
+ $("progressText").textContent=Math.round(roomStates.filter(s=>s.completed).length/rooms.length*100)+"%";
+ $("progressFill").style.width=(roomStates.filter(s=>s.completed).length/rooms.length*100)+"%";
+ $("roomsStat").textContent=roomStates.filter(s=>s.completed).length+" / "+rooms.length;
+ $("placedStat").textContent=roomStates.reduce((n,s,i)=>n+s.placed.length,0);
+ $("levelStat").textContent=1+roomStates.filter(s=>s.completed).length;
+ renderRooms();
+ if(count===room.items.length) showComplete();
+ persist();
+}
+function enableDrag(el,it,index){
+ el.addEventListener("pointerdown",e=>{
+  if(activeDrag)return;
+  e.preventDefault();
+  const scene=$("scene"),rect=scene.getBoundingClientRect();
+  const r=el.getBoundingClientRect();
+  activeDrag={el,it,index,scene,rect,
+   dx:e.clientX-r.left,dy:e.clientY-r.top};
+  el.classList.add("dragging");
+  el.setPointerCapture(e.pointerId);
+ });
+ el.addEventListener("pointermove",e=>{
+  if(!activeDrag||activeDrag.el!==el)return;
+  const a=activeDrag;
+  let x=e.clientX-a.rect.left-a.dx;
+  let y=e.clientY-a.rect.top-a.dy;
+  x=Math.max(0,Math.min(a.rect.width-el.offsetWidth,x));
+  y=Math.max(0,Math.min(a.rect.height-el.offsetHeight,y));
+  el.style.left=(x/a.rect.width*100)+"%";
+  el.style.top=(y/a.rect.height*100)+"%";
+ });
+ el.addEventListener("pointerup",e=>{
+  if(!activeDrag||activeDrag.el!==el)return;
+  const a=activeDrag;
+  activeDrag=null;
+  el.classList.remove("dragging");
+  const er=el.getBoundingClientRect();
+  const cx=er.left+er.width/2,cy=er.top+er.height/2;
+  const zones=[...$("zones").children];
+  const target=zones.find(z=>{
+   const r=z.getBoundingClientRect();
+   return cx>=r.left&&cx<=r.right&&cy>=r.top&&cy<=r.bottom;
+  });
+  if(target && target.dataset.zone===it.zone){
+   const state=roomStates[currentRoom];
+   if(!state.placed.includes(it.name)){
+    state.placed.push(it.name);
+    coins+=10;beep(720,.12);
+    toast("Lovely! +10 coins ✧");
+    const room=rooms[currentRoom];
+    if(state.placed.length===room.items.length){
+     state.completed=true;coins+=40;beep(880,.2);
+    }
+    render();
+   }
+  } else {
+   el.style.left=it.x+"%";el.style.top=it.y+"%";
+   if(target){
+    target.classList.add("wrong");
+    setTimeout(()=>target.classList.remove("wrong"),300);
+    beep(250,.07);toast("Almost! Try another spot 🌿");
+   }
+  }
+ });
+}
+function showComplete(){
+ const box=$("message");
+ const last=currentRoom===rooms.length-1;
+ box.innerHTML=`<div class="big">${last?"🏡":"✨"}</div>
+ <h4>${last?"Your cozy home is complete!":"Room beautifully arranged!"}</h4>
+ <p>${last?"You made every room feel like home. Take a moment to enjoy it.":"You earned 40 bonus coins. Ready for the next little space?"}</p>
+ <button class="primary" id="nextBtn">${last?"Enjoy your home":"Next room →"}</button>`;
+ box.classList.remove("hidden");
+ $("nextBtn").onclick=()=>{
+  if(!last){currentRoom++;persist();render()}
+  else {box.classList.add("hidden");toast("You made this place lovely. 🤍")}
+ };
+}
+$("soundBtn").addEventListener("click",()=>{
+ soundOn=!soundOn;persist();render();
+ if(soundOn)beep();
+});
+$("resetBtn").addEventListener("click",()=>{
+ if(!confirm("Reset this room and arrange everything again?"))return;
+ const state=roomStates[currentRoom];
+ if(state.completed)coins=Math.max(0,coins-40);
+ state.completed=false;state.placed=[];
+ persist();render();toast("Room reset. A fresh start 🌿");
+});
+$("shuffleBtn").addEventListener("click",()=>{
+ const state=roomStates[currentRoom];
+ if(state.placed.length===rooms[currentRoom].items.length){
+  toast("This room is already complete ✨");return;
+ }
+ const room=rooms[currentRoom];
+ room.items.forEach(it=>{
+  if(state.placed.includes(it.name))return;
+  it.x=5+Math.random()*75;
+  it.y=36+Math.random()*48;
+ });
+ render();toast("A little reshuffle. Keep going!");
+});
+$("hintBtn").addEventListener("click",()=>{
+ const room=rooms[currentRoom],state=roomStates[currentRoom];
+ const it=room.items.find(x=>!state.placed.includes(x.name));
+ if(!it){toast("Everything is in its place! ✨");return}
+ const zone=room.zones.find(z=>z.id===it.zone);
+ toast(`${it.emoji} ${it.name} belongs at: ${zone.name}`);
+ const z=[...$("zones").children].find(x=>x.dataset.zone===zone.id);
+ if(z){z.style.outline="3px solid #b2bd9e";setTimeout(()=>z.style.outline="",1600)}
+});
+render();
+</script>
+</body>
+</html>
